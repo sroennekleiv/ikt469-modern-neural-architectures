@@ -1,0 +1,13 @@
+torch
+keras
+tensorflow
+numpy
+pandas
+scikit-learn
+matplotlib
+yolov5
+opencv-python
+torchvision
+lxml
+pillow
+datasets
