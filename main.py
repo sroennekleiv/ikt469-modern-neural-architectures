@@ -7,9 +7,9 @@ import numpy as np
 from PIL import Image
 from torchvision import transforms
 from torchvision.datasets import Kitti
-from torchmetrics.detection.mean_ap import MeanAveragePrecision
+#from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from ultralytics import YOLO
-from transformers import RTDetrForObjectDetection, RTDetrImageProcessor
+#from transformers import RTDetrForObjectDetection, RTDetrImageProcessor
 
 from sklearn.metrics import classification_report
 
@@ -20,6 +20,7 @@ from partA.fire import SmallSqueezeNet
 from partA.inception import SmallInception
 from partA.residual import SmallResNet
 from partA.super_network import SuperNet
+from partA.expert import Router, MixtureOfExperts
 
 from partA.training_evaluate import run_experiment
 
@@ -36,7 +37,7 @@ logging.basicConfig(
 CLASSES = 10
 
 MODELS = {
-    "Plain CNN": PlainCNN(CLASSES),
+    #"Plain CNN": PlainCNN(CLASSES),
     "ResNet-like": SmallResNet(CLASSES),
     "Inception-like": SmallInception(CLASSES),
     "SqueezeNet-like": SmallSqueezeNet(CLASSES),
@@ -46,7 +47,7 @@ MODELS = {
 if __name__ == "__main__":
     log = logging.getLogger(__name__)
 
-    '''log.info("Start at part A: Image classification with residual + inception + fire")
+    log.info("Start at part A: Image classification with residual + inception + fire")
     fashion_mnist = FashionMNISTDataset(batch_size=64, augment=False, size=(28,28), validation_split=0.2)
     train_loader, val_loader, test_loader = fashion_mnist.get_data()
     target_names = fashion_mnist.get_target_names()
@@ -55,12 +56,25 @@ if __name__ == "__main__":
     log.debug(f"Number of classes: {CLASSES}")
 
     results = {}
-    for name, model in MODELS.items():
+    '''for name, model in MODELS.items():
         log.info(f"---- Training {name} -----")
         test_acc = run_experiment(model, train_loader, val_loader, test_loader, epochs=10)
-        results[name] = test_acc
-'''
-    log.info("Start part B: Object detection YOLO vs RT-DETR")
+        results[name] = test_acc'''
+
+
+    log.info("Part C: Mixture of Experts with a trainable router/gating")
+
+    # Create a list of the expert models
+    experts = list(MODELS.values())
+
+    router = Router(in_channels=1, num_experts=len(experts))
+
+    mixture = MixtureOfExperts(experts, router)
+    
+    log.info(f"Training Mixture of Experts with {len(experts)} experts")
+    moe_test_acc = run_experiment(mixture, train_loader, val_loader, test_loader, epochs=3, auto=False)
+
+    '''log.info("Start part B: Object detection YOLO vs RT-DETR")
     MAX_IMG = 200
 
     transform = transforms.Compose([transforms.ToTensor()])
@@ -176,4 +190,4 @@ if __name__ == "__main__":
     print(yolo_fail[:10])
 
     print("\nRT-DETR failed, YOLO succeeded:")
-    print(rtdetr_fail[:10])
+    print(rtdetr_fail[:10])'''

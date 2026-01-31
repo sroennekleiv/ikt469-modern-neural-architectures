@@ -129,3 +129,35 @@ plt.legend(fontsize=9, loc='lower right')
 plt.tight_layout()
 plt.savefig("accuracy_plot_with_info_boxes.png")
 plt.show()
+
+
+import matplotlib.pyplot as plt
+from sklearn.manifold import TSNE
+
+def visualize_tsne(embeddings, labels, perplexity=30):
+    tsne = TSNE(
+        n_components=2,
+        perplexity=perplexity,
+        init="pca",
+        learning_rate="auto",
+        random_state=42
+    )
+
+    emb_2d = tsne.fit_transform(embeddings.numpy())
+
+    plt.figure(figsize=(8, 6))
+    scatter = plt.scatter(
+        emb_2d[:, 0],
+        emb_2d[:, 1],
+        c=labels.numpy(),
+        cmap="tab10",
+        s=6,
+        alpha=0.8
+    )
+    plt.colorbar(scatter)
+    plt.title("t-SNE of Autoencoder Latent Space")
+    plt.xlabel("Component 1")
+    plt.ylabel("Component 2")
+    plt.tight_layout()
+    plt.savefig("auto.png")
+    plt.show()
